@@ -6,6 +6,7 @@ import { Curves } from './CurveExtras.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 
+
 var container, stats;
 
 var camera, scene, renderer, splineCamera, cameraHelper, cameraEye;

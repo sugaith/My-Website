@@ -5,6 +5,9 @@
 - npm run prod
 
 
+##issues
+- parcel bundler resource problem
+
 ## todo
 
 

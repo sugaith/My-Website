@@ -45,6 +45,14 @@ function init() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color( "#8f8f8f" );
     // scene.overrideMaterial = new THREE.MeshBasicMaterial( { color: 'green' } );
+    let r = "";
+    let urls = [ r + "dark-s_px.jpg", r + "dark-s_nx.jpg",
+        r + "dark-s_py.jpg", r + "dark-s_ny.jpg",
+        r + "dark-s_pz.jpg", r + "dark-s_nz.jpg" ];
+    let textureCube = new THREE.CubeTextureLoader().load( urls );
+    textureCube.format = THREE.RGBFormat;
+    textureCube.encoding = THREE.sRGBEncoding;
+    scene.background = textureCube;
 
     // light
     var light = new THREE.DirectionalLight( "#ffffff" );
