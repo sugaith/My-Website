@@ -1,0 +1,23 @@
+{
+  "name": "sugadev",
+  "version": "1.0.0",
+  "description": "sugadev",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel src/index.htm",
+    "prod": "parcel build src/index.htm",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Thiago C L da Silva",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4",
+    "sass": "^1.25.0"
+  },
+  "dependencies": {
+    "sty": "^0.6.1",
+    "three": "^0.113.2",
+    "three-gltf-loader": "^1.111.0"
+  }
+}
