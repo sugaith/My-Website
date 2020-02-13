@@ -5,12 +5,12 @@ import * as THREE from "./libs/three";
 // import * as THREE from 'three';
 import Stats from "./libs/stats.module";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-
+import {FlyControls} from "three/examples/jsm/controls/FlyControls";
 
 // import {GLTFLoader} from 'three-gltf-loader';
 // import {GLTFLoader}  from 'three/examples/jsm/loaders/GLTFLoader'
 // import * as GLTF from './libs/GLTFLoader';
- import {GLTFLoader} from './libs/GLTFLoader';
+import {GLTFLoader} from './libs/GLTFLoader';
 
 
 /*TESTE*/
@@ -22,14 +22,16 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 let camera, scene, renderer, splineCamera, cameraHelper;
 let parent, tubeGeometry, mesh;
-
+let container, stats;
+let neuron, neuronGlow, flyControls ;
+let clock = new THREE.Clock();
+let tempPath = [];
 
 
 init();
 animate();
 
-let container, stats;
-let neuron, neuronGlow ;
+
 
 
 function init() {
@@ -40,7 +42,8 @@ function init() {
         50, window.innerWidth / window.innerHeight,
         0.01, 10000
     );
-    camera.position.set( 0, 0, 20 );
+    // camera.position.set( 0, 0, 20 );
+    camera.position.set( 0, 0, 0 );
     camera.far = 100000;
     camera.updateProjectionMatrix();
 
@@ -199,12 +202,36 @@ function init() {
     stats = new Stats();
     container.appendChild( stats.dom );
 
-    var controls = new OrbitControls( camera, renderer.domElement );
+    //FLY / ORBIT CONTROLS
+    // var controls = new OrbitControls( camera, renderer.domElement );
+    flyControls = new FlyControls( camera ,  renderer.domElement );
+    flyControls.movementSpeed = 1;
+    flyControls.rollSpeed = Math.PI / 12;
+    // flyControls.autoForward = true;
+    flyControls.dragToLook = false;
+
+
+    // const fs = require('fs');
+    // fs.writeFile("/tmp/test", "Hey there!", function(err) {
+    //     if(err) {
+    //         return console.log(err);
+    //     }
+    //     console.log("The file was saved!");
+    // });
+
 
     window.addEventListener( 'resize', onWindowResize, false );
+    document.addEventListener('click', onMouseClick, false);
+    document.addEventListener('keypress', ()=>{
+        console.log(camera.position);
+        tempPath.push( camera.position );
+    });
 }
 
 function animate() {
+    let delta = clock.getDelta();
+    flyControls.update(delta);
+
     // if (neuronGlow !== undefined){
     //     for(let i=0; i< neuronGlow.children.length; i++){
     //         let object = neuronGlow.children[i];
@@ -221,6 +248,17 @@ function animate() {
     render();
     stats.update();
 
+}
+function onMouseClick(event) {
+    // event.preventDefault();
+    console.log( camera.position);
+    fs.writeFile("./", JSON.stringify( tempPath ),
+        function(err) {
+            if(err) {
+                return console.log(err);
+            }
+            console.log("The file was saved!");
+    });
 }
 function onWindowResize() {
 

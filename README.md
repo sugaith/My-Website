@@ -7,6 +7,9 @@
 
 ## todo
 
+- blender
+    - draw center of neuron separated from axons
+    
 
 - environment:
     - milky way textures sphere/cube (https://threejs.org/examples/#webgl_shaders_tonemapping)
