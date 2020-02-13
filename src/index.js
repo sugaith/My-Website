@@ -47,14 +47,29 @@ function init() {
     camera.far = 100000;
     camera.updateProjectionMatrix();
 
-    // scene
+    // SCENE MAIN
     scene = new THREE.Scene();
     scene.background = new THREE.Color( "#8f8f8f" );
     // scene.overrideMaterial = new THREE.MeshBasicMaterial( { color: 'green' } );
-    let r = "";
-    let urls = [ r + "dark-s_px.jpg", r + "dark-s_nx.jpg",
-        r + "dark-s_py.jpg", r + "dark-s_ny.jpg",
-        r + "dark-s_pz.jpg", r + "dark-s_nz.jpg" ];
+
+    let bg_px = require('../assets/milkyway/dark-s_px.jpg'),
+        bg_nx = require('../assets/milkyway/dark-s_nx.jpg'),
+        bg_py = require('../assets/milkyway/dark-s_py.jpg'),
+        bg_ny = require('../assets/milkyway/dark-s_ny.jpg'),
+        bg_pz = require('../assets/milkyway/dark-s_pz.jpg'),
+        bg_nz = require('../assets/milkyway/dark-s_nz.jpg');
+
+    console.log("bg_nx");
+    console.log(bg_nx);
+
+
+    // let r = "./";
+    // let urls = [ r + "dark-s_px.jpg", r + "dark-s_nx.jpg",
+    //     r + "dark-s_py.jpg", r + "dark-s_ny.jpg",
+    //     r + "dark-s_pz.jpg", r + "dark-s_nz.jpg" ];
+
+    let urls = [ bg_px.default, bg_nx.default , bg_py.default , bg_ny.default , bg_pz.default ,bg_nz.default  ];
+
     let textureCube = new THREE.CubeTextureLoader().load( urls );
     textureCube.format = THREE.RGBFormat;
     textureCube.encoding = THREE.sRGBEncoding;
@@ -90,10 +105,12 @@ function init() {
 
 
     // let loader = new GLTFLoader(manager);
-    console.log(GLTFLoader)
+    console.log(GLTFLoader);
     let loader = new GLTFLoader();
-    loader.load('suganeuron_surface.glb', function ( gltf ) {
-    // loader.load('suganeuron3.gltf', function (gltf) {
+
+    let neuronURL = require('../assets/suganeuron_surface.glb');
+    // loader.load('suganeuron_surface.glb', function ( gltf ) {
+    loader.load(neuronURL.default, function ( gltf ) {
         console.log("neuron imported::::::");
         console.log(gltf);
 
@@ -166,8 +183,8 @@ function init() {
         transparent: true
     });
 
-    loader.load('suganeuron_surface.glb', function ( gltf ) {
-        // loader.load('suganeuron3.gltf', function (gltf) {
+    // loader.load('./suganeuron_surface.glb', function ( gltf ) {
+    loader.load(neuronURL.default, function ( gltf ) {
         console.log("neuronGlow imported::::::");
         console.log(gltf);
 
@@ -274,4 +291,15 @@ function render() {
     // renderer.render( scene, params.animationView === true ? splineCamera : camera );
     renderer.render( scene,  camera );
 
+}
+
+
+function getBase64Image(img) {
+    var canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    var dataURL = canvas.toDataURL("image/jpg");
+    return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
 }
