@@ -29,6 +29,9 @@ init();
 animate();
 
 let container, stats;
+let neuron, neuronGlow ;
+
+
 function init() {
     container = document.getElementById( 'container' );
 
@@ -55,8 +58,12 @@ function init() {
     scene.background = textureCube;
 
     // light
-    var light = new THREE.DirectionalLight( "#ffffff" );
-    light.position.set( 0, 0, 1 );
+    let light = new THREE.DirectionalLight( "#7ec0ff" , 1);
+    light.position.set( -10, 0, 50 );
+    scene.add( light );
+
+    light = new THREE.DirectionalLight( "#ffe873" , 1);
+    light.position.set( 10, 10, 50 );
     scene.add( light );
 
 
@@ -71,7 +78,7 @@ function init() {
 
 
 
-    //LOADER
+    //LOADER for neuron
     let manager = new THREE.LoadingManager();
     manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
         console.log( 'Started loading file: ' +
@@ -82,8 +89,7 @@ function init() {
     // let loader = new GLTFLoader(manager);
     console.log(GLTFLoader)
     let loader = new GLTFLoader();
-    let neuron ;
-    loader.load('suganeuron3.glb', function ( gltf ) {
+    loader.load('suganeuron_surface.glb', function ( gltf ) {
     // loader.load('suganeuron3.gltf', function (gltf) {
         console.log("neuron imported::::::");
         console.log(gltf);
@@ -92,12 +98,14 @@ function init() {
         neuron.name = "neuron";
 
         let newMaterial = new THREE.MeshLambertMaterial({
-            opacity: 0.9, transparent: true,
+            opacity: 0.7, transparent: true,
             color: "#3d52cc",
-            // side: THREE.DoubleSide,
-            side: THREE.BackSide,
+            side: THREE.DoubleSide,
+            // side: THREE.BackSide,
+            // emissive: "#3d52cc"
         });
 
+        //changing material
         neuron.traverse((o) => {
             if (o.isMesh) o.material = newMaterial;
         });
@@ -105,6 +113,81 @@ function init() {
         scene.add(neuron);
     });
 
+// CODE FOR GLSL - SHADERS
+
+// <script id="vertexShaderSun" type="x-shader/x-vertex">
+//         uniform vec3 viewVector;
+//     varying float intensity;
+//     void main() {
+//         gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4( position, 1.0 );
+//         vec3 actual_normal = vec3(modelMatrix * vec4(normal, 0.0));
+//         intensity = pow( dot(normalize(viewVector), actual_normal), 6.0 );
+//     }
+// </script>
+//
+//     <script id="fragmentShaderSun" type="x-shader/x-vertex">
+//         varying float intensity;
+//     void main() {
+//         vec3 glow = vec3(0, 1, 0) * intensity;
+//         gl_FragColor = vec4( glow, 1.0 );
+//     }
+// </script>
+    let vertexShader = "";
+    vertexShader += "uniform vec3 viewVector;";
+    vertexShader += "varying float intensity;";
+    vertexShader += "void main() {";
+    vertexShader += "gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4( position, 1.0 );";
+    vertexShader += "vec3 actual_normal = vec3(modelMatrix * vec4(normal, 0.0));";
+    vertexShader += "intensity = pow( dot(normalize(viewVector), actual_normal), 6.0 );";
+    vertexShader += "}";
+
+    let fragmentShader = "";
+    fragmentShader += "varying float intensity;";
+    fragmentShader += "void main() {";
+    fragmentShader += "vec3 glow = vec3(0, 1, 0) * intensity;";
+    fragmentShader += "gl_FragColor = vec4( glow, 1.0 );";
+    fragmentShader += "}";
+
+    // LOADER FOR SHYNY NEURON SHADER MATERIAL
+    let glowMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            viewVector: {
+                type: "v3",
+                value: camera.position
+            }
+        },
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        transparent: true
+    });
+
+    loader.load('suganeuron_surface.glb', function ( gltf ) {
+        // loader.load('suganeuron3.gltf', function (gltf) {
+        console.log("neuronGlow imported::::::");
+        console.log(gltf);
+
+        neuronGlow = gltf.scene;
+        neuronGlow.name = "neuronGlow";
+        // neuronGlow.scale.x = 1.2;
+        // neuronGlow.scale.z = 1.2;
+        // neuronGlow.scale.y = 1.2;
+        for(let i=0; i< neuronGlow.children.length; i++){
+            // let glowMesh = new THREE.Mesh(neuronGlow.children[i], glowMaterial);
+            neuronGlow.children[i].scale.x = (1.01);
+            neuronGlow.children[i].scale.y = (1.01);
+            neuronGlow.children[i].scale.z = (1.2);
+            // neuronGlow.children[i].glow = glowMesh;
+        }
+
+        //changing material
+        neuronGlow.traverse((o) => {
+            if (o.isMesh) o.material = glowMaterial;
+        });
+
+        scene.add(neuronGlow);
+    });
 
     // renderer
     renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -116,12 +199,22 @@ function init() {
     stats = new Stats();
     container.appendChild( stats.dom );
 
-
     var controls = new OrbitControls( camera, renderer.domElement );
 
     window.addEventListener( 'resize', onWindowResize, false );
 }
+
 function animate() {
+    // if (neuronGlow !== undefined){
+    //     for(let i=0; i< neuronGlow.children.length; i++){
+    //         let object = neuronGlow.children[i];
+    //         let viewVector = new THREE.Vector3().subVectors(
+    //             camera.position, object.glow.getWorldPosition()
+    //         );
+    //         object.glow.material.uniforms.viewVector.value = viewVector;
+    //     }
+    // }
+
 
     requestAnimationFrame( animate );
 

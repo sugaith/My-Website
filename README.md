@@ -1,8 +1,5 @@
 # My website
 
-- npm install
-- npm run dev
-- npm run prod
 
 
 ##issues
@@ -41,3 +38,7 @@ trajectory:
         - flower of life
 
 
+## commands
+- npm install
+- npm run dev
+- npm run prod
