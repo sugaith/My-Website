@@ -1,9 +1,16 @@
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+var nodeExternals = require('webpack-node-externals');
+
 module.exports = {
     entry: './src/index.js'
 };
 module.exports = {
+    // node: {
+    //     fs: "empty"
+    // },
+    // target: 'node', // in order to ignore built-in modules like path, fs, etc.
+    // externals: [nodeExternals()], // in order to ignore all modules in node_modules folder
     module: {
         rules: [
             {
@@ -16,11 +23,11 @@ module.exports = {
                 ]
             },
             {
-                test: /\.(png|jpe?g|gif|glb)$/i,
+                test: /\.(png|jpe?g|gif|glb)$/,
                 use: [{ loader: 'file-loader' }]
             },
             {
-                test:/\.(s*)css$/,
+                test:/\.(s*)css$/i,
                 use: [
                     "style-loader",
                     "css-loader",
@@ -38,8 +45,8 @@ module.exports = {
         new MiniCssExtractPlugin({
             //same options as webpackOptions.output
             //options are optional
-            filename: "[name].css",
-            chunkFilename: "[id].css",
+            // filename: "[name].css",
+            // chunkFilename: "[id].css",
         })
     ]
 };

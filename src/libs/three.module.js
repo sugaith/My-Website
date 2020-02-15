@@ -24167,6 +24167,10 @@ function WebGLRenderer( parameters ) {
 
 			renderer = indexedBufferRenderer;
 			renderer.setIndex( attribute );
+            if ( attribute !== undefined ) {
+                renderer = indexedBufferRenderer;
+                renderer.setIndex( attribute );
+            }
 
 		}
 
@@ -24174,7 +24178,7 @@ function WebGLRenderer( parameters ) {
 
 			setupVertexAttributes( object, geometry, material, program );
 
-			if ( index !== null ) {
+            if ( attribute !== undefined ) {
 
 				_gl.bindBuffer( 34963, attribute.buffer );
 

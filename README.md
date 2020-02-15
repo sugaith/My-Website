@@ -3,7 +3,8 @@
 
 
 ##issues
-- parcel bundler resource problem
+- *OK* parcel bundler resource problem (migrated to WebPack)
+- fs node wont work
 
 ## todo
 
@@ -12,14 +13,14 @@
     
 
 - environment:
-    - milky way textures sphere/cube (https://threejs.org/examples/#webgl_shaders_tonemapping)
+    - *OK* milky way textures sphere/cube (https://threejs.org/examples/#webgl_shaders_tonemapping)
     
 trajectory:
     - particles of light traveling between neurons
     - interactive camera trajectory
 
 - neuron    
-    - glowing neurons (http://kadekeith.me/2017/09/12/three-glow.html)
+    - *OK* glowing neurons (http://kadekeith.me/2017/09/12/three-glow.html)
     - wavy neuron nucleus cytoplasm  
 
 

@@ -1,8 +1,19 @@
 
-$cor: blue;
+$cor: green;
 $cor2: #ff000e;
 
 body{
+    margin: 0;
+    padding: 0;
+
+    height: 100vh;
+    width: 100vh;
     background: $cor;
     color: $cor2;
+    overflow: hidden;
+}
+.container{
+    display: block;
+    position: fixed;
+    z-index: 0;
 }

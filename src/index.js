@@ -6,11 +6,17 @@ import * as THREE from "./libs/three";
 import Stats from "./libs/stats.module";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import {FlyControls} from "three/examples/jsm/controls/FlyControls";
+import {FirstPersonControls} from "three/examples/jsm/controls/FirstPersonControls";
+import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
+import {PointerLockControls} from "three/examples/jsm/controls/PointerLockControls";
 
-// import {GLTFLoader} from 'three-gltf-loader';
-// import {GLTFLoader}  from 'three/examples/jsm/loaders/GLTFLoader'
-// import * as GLTF from './libs/GLTFLoader';
+import {WebGLRenderer} from "./libs/three.module";
+
 import {GLTFLoader} from './libs/GLTFLoader';
+
+import {PATHS} from './js_components/energyPaths'
+
+
 
 
 /*TESTE*/
@@ -23,10 +29,17 @@ import {GLTFLoader} from './libs/GLTFLoader';
 let camera, scene, renderer, splineCamera, cameraHelper;
 let parent, tubeGeometry, mesh;
 let container, stats;
-let neuron, neuronGlow, flyControls ;
+let neuron, neuronGlow, flyControls, orbitControls, fpsControls ;
 let clock = new THREE.Clock();
 let tempPath = [];
 
+var moveForward = false;
+var moveBackward = false;
+var moveLeft = false;
+var moveRight = false;
+var prevTime = performance.now();
+var velocity = new THREE.Vector3();
+var direction = new THREE.Vector3();
 
 init();
 animate();
@@ -43,33 +56,28 @@ function init() {
         0.01, 10000
     );
     // camera.position.set( 0, 0, 20 );
-    camera.position.set( 0, 0, 0 );
+    camera.position.set( 0, 0, 15 );
+    camera.lookAt(0,0,0);
     camera.far = 100000;
     camera.updateProjectionMatrix();
 
     // SCENE MAIN
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( "#8f8f8f" );
+    scene.background = new THREE.Color( "#8f1510" );
     // scene.overrideMaterial = new THREE.MeshBasicMaterial( { color: 'green' } );
-
     let bg_px = require('../assets/milkyway/dark-s_px.jpg'),
         bg_nx = require('../assets/milkyway/dark-s_nx.jpg'),
         bg_py = require('../assets/milkyway/dark-s_py.jpg'),
         bg_ny = require('../assets/milkyway/dark-s_ny.jpg'),
         bg_pz = require('../assets/milkyway/dark-s_pz.jpg'),
         bg_nz = require('../assets/milkyway/dark-s_nz.jpg');
-
     console.log("bg_nx");
     console.log(bg_nx);
-
-
     // let r = "./";
     // let urls = [ r + "dark-s_px.jpg", r + "dark-s_nx.jpg",
     //     r + "dark-s_py.jpg", r + "dark-s_ny.jpg",
     //     r + "dark-s_pz.jpg", r + "dark-s_nz.jpg" ];
-
     let urls = [ bg_px.default, bg_nx.default , bg_py.default , bg_ny.default , bg_pz.default ,bg_nz.default  ];
-
     let textureCube = new THREE.CubeTextureLoader().load( urls );
     textureCube.format = THREE.RGBFormat;
     textureCube.encoding = THREE.sRGBEncoding;
@@ -85,15 +93,28 @@ function init() {
     scene.add( light );
 
 
-//     //sphere
-//     let geometry = new THREE.SphereGeometry( 3, 15, 15 );
-// // let material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
-//     let material = new THREE.MeshLambertMaterial( {color: "#ffff00"} );
-//     let sphere = new THREE.Mesh( geometry, material );
-//     sphere.position.x = 20;
-//     sphere.name = "sphere";
-//     scene.add( sphere );
+    //sphere
+    let geometry = new THREE.SphereBufferGeometry( 0.1, 32, 32 );
+    let material = new THREE.MeshLambertMaterial( {color: "#ffffff"} );
+    let sphere = new THREE.Mesh( geometry, material );
+    // sphere.position.y = 10 ;
+    sphere.name = "sphere";
+    scene.add( sphere );
 
+
+    //ENERGY PATH
+    let energyPath_vec3 = [];
+    for (let i=0; i<PATHS.path1.length; i++){
+        let point = PATHS.path1[i];
+        energyPath_vec3.push( new THREE.Vector3(point.x, point.y, point.z) )
+    }
+    // let curve = new THREE.CatmullRomCurve3( energyPath_vec3 );
+    // var points = [];
+    // points = curve.getPoints( 50  );
+    let splineMaterial = new THREE.LineBasicMaterial( { color : "#ffa9ac" } );
+    let splineGeometry = new THREE.BufferGeometry().setFromPoints( energyPath_vec3 );
+    let energyPath = new THREE.Line( splineGeometry, splineMaterial );
+    scene.add(energyPath);
 
 
     //LOADER for neuron
@@ -131,6 +152,8 @@ function init() {
         });
 
         scene.add(neuron);
+
+        // renderTheRest();
     });
 
 // CODE FOR GLSL - SHADERS
@@ -206,11 +229,11 @@ function init() {
             if (o.isMesh) o.material = glowMaterial;
         });
 
-        scene.add(neuronGlow);
+        // scene.add(neuronGlow);
     });
 
     // renderer
-    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer = new WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     container.appendChild( renderer.domElement );
@@ -220,34 +243,43 @@ function init() {
     container.appendChild( stats.dom );
 
     //FLY / ORBIT CONTROLS
-    // var controls = new OrbitControls( camera, renderer.domElement );
+    // orbitControls = new OrbitControls( camera, renderer.domElement );
+
+    // FLY CONTROL
     flyControls = new FlyControls( camera ,  renderer.domElement );
-    flyControls.movementSpeed = 1;
-    flyControls.rollSpeed = Math.PI / 12;
+    flyControls.movementSpeed = 5;
+    flyControls.rollSpeed = Math.PI / 6;
     // flyControls.autoForward = true;
     flyControls.dragToLook = false;
 
-
-    // const fs = require('fs');
-    // fs.writeFile("/tmp/test", "Hey there!", function(err) {
-    //     if(err) {
-    //         return console.log(err);
-    //     }
-    //     console.log("The file was saved!");
-    // });
+    //FPS CONTROL
+    // fpsControls = new PointerLockControls( camera ,  document.body );
+    // // scene.add(fpsControls.getObject());
+    // document.body.addEventListener( 'click', function () {
+    //     fpsControls.lock();
+    // }, false );
 
 
+    // EVENT LISTENERS
+    // document.addEventListener( 'keydown', onKeyDown, false );
+    // document.addEventListener( 'keyup', onKeyUp, false );
     window.addEventListener( 'resize', onWindowResize, false );
     document.addEventListener('click', onMouseClick, false);
-    document.addEventListener('keypress', ()=>{
-        console.log(camera.position);
-        tempPath.push( camera.position );
-    });
+    document.addEventListener('keypress', keypress);
 }
 
+
+
+
+
+
+
+
+let acceleration = 30.0;
 function animate() {
     let delta = clock.getDelta();
     flyControls.update(delta);
+    // fpsControls.update(delta);
 
     // if (neuronGlow !== undefined){
     //     for(let i=0; i< neuronGlow.children.length; i++){
@@ -262,20 +294,138 @@ function animate() {
 
     requestAnimationFrame( animate );
 
+    // if ( fpsControls.isLocked === true ) {
+    //     //for up and down
+    //     let cameraLookAtVector = new THREE.Vector3( 0, 0, - 1 );
+    //     cameraLookAtVector.applyQuaternion( camera.quaternion );
+    //
+    //     var time = performance.now();
+    //     var delta = ( time - prevTime ) / 1000;
+    //
+    //     velocity.x -= velocity.x * 10.0 * delta;
+    //     velocity.z -= velocity.z * 10.0 * delta;
+    //     // velocity.y -= velocity.y * 10.0 * delta;
+    //
+    //     // velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+    //
+    //     direction.z = Number( moveForward ) - Number( moveBackward );
+    //     direction.x = Number( moveRight ) - Number( moveLeft );
+    //     direction.normalize(); // this ensures consistent movements in all directions
+    //
+    //     if ( moveForward || moveBackward ) {
+    //         //to move fwrd OR bkrd
+    //         // velocity.z -= direction.z * acceleration * delta;
+    //
+    //         //new -> deaaccelerate according to cameraLookAtVector.y
+    //         let absLookY_neg = 1 - Math.abs( cameraLookAtVector.y );
+    //         velocity.z -= direction.z * (acceleration * absLookY_neg) * delta;
+    //
+    //         //to move up or down
+    //         let absLookY_pos = Math.abs( cameraLookAtVector.y );
+    //         if (Math.abs(cameraLookAtVector.y) > 0.1){
+    //             if (moveForward)
+    //                 velocity.y += cameraLookAtVector.y * (acceleration * absLookY_pos) * delta;
+    //             if (moveBackward)
+    //                 velocity.y -= cameraLookAtVector.y * (acceleration * absLookY_pos) * delta;
+    //         }
+    //     }else{
+    //         velocity.y = 0;
+    //     }
+    //
+    //
+    //     if ( moveLeft || moveRight ) velocity.x -= direction.x * acceleration * delta;
+    //
+    //     // if ( onObject === true ) {
+    //     //
+    //     //     velocity.y = Math.max( 0, velocity.y );
+    //     //     canJump = true;
+    //     //
+    //     // }
+    //
+    //     fpsControls.moveRight( - velocity.x * delta );
+    //     fpsControls.moveForward( - velocity.z * delta );
+    //
+    //     fpsControls.getObject().position.y += ( velocity.y * delta ); // new behavior
+    //
+    //     // if ( fpsControls.getObject().position.y < 10 ) {
+    //     //     velocity.y = 0;
+    //     //     fpsControls.getObject().position.y = 10;
+    //     //
+    //     //     // canJump = true;
+    //     // }
+    //
+    //     prevTime = time;
+    //
+    // }
+
     render();
     stats.update();
 
 }
+
+function onKeyDown(event) {
+    switch ( event.keyCode ) {
+
+        case 38: // up
+        case 87: // w
+            moveForward = true;
+            break;
+        case 37: // left
+        case 65: // a
+            moveLeft = true;
+            break;
+        case 40: // down
+        case 83: // s
+            moveBackward = true;
+            break;
+        case 39: // right
+        case 68: // d
+            moveRight = true;
+            break;
+    }
+}
+function onKeyUp(event) {
+    switch ( event.keyCode ) {
+        case 38: // up
+        case 87: // w
+            moveForward = false;
+            break;
+        case 37: // left
+        case 65: // a
+            moveLeft = false;
+            break;
+        case 40: // down
+        case 83: // s
+            moveBackward = false;
+            break;
+        case 39: // right
+        case 68: // d
+            moveRight = false;
+            break;
+    }
+}
+
+function keypress() {
+    // console.log(camera.position);
+    tempPath.push( new THREE.Vector3(
+        camera.position.x,
+        camera.position.y,
+        camera.position.z,
+    ));
+}
+
+
 function onMouseClick(event) {
     // event.preventDefault();
+    console.log( camera);
     console.log( camera.position);
-    fs.writeFile("./", JSON.stringify( tempPath ),
-        function(err) {
-            if(err) {
-                return console.log(err);
-            }
-            console.log("The file was saved!");
-    });
+    console.log( JSON.stringify( tempPath ) );
+
+    console.log( " looking vector ");
+    let vector = new THREE.Vector3( 0, 0, - 1 );
+    vector.applyQuaternion( camera.quaternion );
+    console.log( vector );
+    console.log( PATHS );
 }
 function onWindowResize() {
 
