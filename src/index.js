@@ -12,9 +12,20 @@ import {PointerLockControls} from "three/examples/jsm/controls/PointerLockContro
 
 import {WebGLRenderer} from "./libs/three.module";
 
+// import {TweenMax} from "./libs/TweenMax.min"
+
 import {GLTFLoader} from './libs/GLTFLoader';
 
 import {PATHS} from './js_components/energyPaths'
+// import TimelineMax from './libs/TweenMax.min'
+
+
+const TweenMax = require('./libs/TweenMax.min');
+import { TimelineMax, Power2, Elastic, CSSPlugin , Expo} from "gsap" ;
+
+import {EnergySphere} from './classes/EnergySphere'
+import {EnergyPumper} from "./classes/EnergyPumper";
+
 
 
 
@@ -32,7 +43,13 @@ let container, stats;
 let neuron, neuronGlow, flyControls, orbitControls, fpsControls ;
 let clock = new THREE.Clock();
 let tempPath = [];
-
+let sphere;
+let energyPath_vec3 = [];
+let energyPumper1;
+let catmullCurve;
+let energyPath;
+let splineGeometry;
+let TICK_PATH = 0;
 var moveForward = false;
 var moveBackward = false;
 var moveLeft = false;
@@ -93,28 +110,26 @@ function init() {
     scene.add( light );
 
 
-    //sphere
-    let geometry = new THREE.SphereBufferGeometry( 0.1, 32, 32 );
-    let material = new THREE.MeshLambertMaterial( {color: "#ffffff"} );
-    let sphere = new THREE.Mesh( geometry, material );
-    // sphere.position.y = 10 ;
-    sphere.name = "sphere";
-    scene.add( sphere );
+
 
 
     //ENERGY PATH
-    let energyPath_vec3 = [];
     for (let i=0; i<PATHS.path1.length; i++){
         let point = PATHS.path1[i];
         energyPath_vec3.push( new THREE.Vector3(point.x, point.y, point.z) )
     }
-    // let curve = new THREE.CatmullRomCurve3( energyPath_vec3 );
-    // var points = [];
-    // points = curve.getPoints( 50  );
+    catmullCurve = new THREE.CatmullRomCurve3( energyPath_vec3 );
+    var points;
+    points = catmullCurve.getPoints( 50  );
+
     let splineMaterial = new THREE.LineBasicMaterial( { color : "#ffa9ac" } );
-    let splineGeometry = new THREE.BufferGeometry().setFromPoints( energyPath_vec3 );
-    let energyPath = new THREE.Line( splineGeometry, splineMaterial );
+    splineGeometry = new THREE.BufferGeometry().setFromPoints( points );
+    energyPath = new THREE.Line( splineGeometry, splineMaterial );
     scene.add(energyPath);
+
+    //sphere
+    energyPumper1 = new EnergyPumper(catmullCurve, scene);
+    // scene.add( energySphere.sphere );
 
 
     //LOADER for neuron
@@ -158,23 +173,6 @@ function init() {
 
 // CODE FOR GLSL - SHADERS
 
-// <script id="vertexShaderSun" type="x-shader/x-vertex">
-//         uniform vec3 viewVector;
-//     varying float intensity;
-//     void main() {
-//         gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4( position, 1.0 );
-//         vec3 actual_normal = vec3(modelMatrix * vec4(normal, 0.0));
-//         intensity = pow( dot(normalize(viewVector), actual_normal), 6.0 );
-//     }
-// </script>
-//
-//     <script id="fragmentShaderSun" type="x-shader/x-vertex">
-//         varying float intensity;
-//     void main() {
-//         vec3 glow = vec3(0, 1, 0) * intensity;
-//         gl_FragColor = vec4( glow, 1.0 );
-//     }
-// </script>
     let vertexShader = "";
     vertexShader += "uniform vec3 viewVector;";
     vertexShader += "varying float intensity;";
@@ -266,10 +264,51 @@ function init() {
     window.addEventListener( 'resize', onWindowResize, false );
     document.addEventListener('click', onMouseClick, false);
     document.addEventListener('keypress', keypress);
+    TweenMax.ticker.addEventListener('tick', updatePaths);
+
+    energyPumper1.pump();
 }
 
+let TICK_DELAY = .1;//seconds
+let clockPath = new THREE.Clock();
+clockPath.start();
+function updatePaths(){
 
 
+    //
+    // let elipsedTime = clock.getElapsedTime();
+    // // console.log("tick updatePaths");
+    // // console.log(elipsedTime);
+    // // console.log(clock.getDelta());
+    // // let limit = energyPath_vec3.length;
+    // let points = catmullCurve.getPoints(100);
+    // let limit = points.length;
+    //
+    //
+    //
+    // if (TICK_PATH < limit){
+    //     if (elipsedTime > TICK_DELAY){
+    //         let newPos = points[TICK_PATH];
+    //
+    //         new TimelineMax()
+    //         .to( energySphere.sphere.position, 1, {
+    //             x:  newPos.x,
+    //             y:  newPos.y,
+    //             z:  newPos.z,
+    //             // ease: Linear
+    //         });
+    //
+    //         // sphere.position.x = newPos.x;
+    //         // sphere.position.y = newPos.y;
+    //         // sphere.position.z = newPos.z;
+    //
+    //         TICK_PATH++;
+    //         clock.start();
+    //     }
+    // }else{
+    //     TICK_PATH = 0;
+    // }
+}
 
 
 
