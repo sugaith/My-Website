@@ -46,13 +46,13 @@ let catmullCurve;
 let energyPath;
 let splineGeometry;
 let TICK_PATH = 0;
-var moveForward = false;
-var moveBackward = false;
-var moveLeft = false;
-var moveRight = false;
-var prevTime = performance.now();
-var velocity = new THREE.Vector3();
-var direction = new THREE.Vector3();
+let moveForward = false;
+let moveBackward = false;
+let moveLeft = false;
+let moveRight = false;
+let prevTime = performance.now();
+let velocity = new THREE.Vector3();
+let direction = new THREE.Vector3();
 
 init();
 animate();
@@ -168,19 +168,19 @@ function init() {
   vertexShader += "uniform vec3 viewVector;";
   vertexShader += "varying float intensity;";
   vertexShader += "void main() {";
-  vertexShader += "gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4( position, 1.0 );";
-  vertexShader += "vec3 actual_normal = vec3(modelMatrix * vec4(normal, 0.0));";
-  vertexShader += "intensity = pow( dot(normalize(viewVector), actual_normal), 6.0 );";
+  vertexShader +=   "gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4( position, 1.0 );";
+  vertexShader +=   "vec3 actual_normal = vec3(modelMatrix * vec4(normal, 0.0));";
+  vertexShader +=   "intensity = pow( dot(normalize(viewVector), actual_normal), 6.0 );";
   vertexShader += "}";
 
   let fragmentShader = "";
   fragmentShader += "varying float intensity;";
   fragmentShader += "void main() {";
-  fragmentShader += "vec3 glow = vec3(0, 1, 0) * intensity;";
-  fragmentShader += "gl_FragColor = vec4( glow, 1.0 );";
+  fragmentShader +=   "vec3 glow = vec3(0, 1, 0) * intensity;";
+  fragmentShader +=   "gl_FragColor = vec4( glow, 1.0 );";
   fragmentShader += "}";
 
-  // LOADER FOR SHYNY NEURON SHADER MATERIAL
+  // LOADER FOR SHINY NEURON SHADER MATERIAL
   let glowMaterial = new THREE.ShaderMaterial({
     uniforms: {
       viewVector: {
@@ -239,7 +239,7 @@ function init() {
   flyControls.movementSpeed = 5;
   flyControls.rollSpeed = Math.PI / 6;
   // flyControls.autoForward = true;
-  flyControls.dragToLook = false;
+  flyControls.dragToLook = true;
 
   //FPS CONTROL
   // fpsControls = new PointerLockControls( camera ,  document.body );
