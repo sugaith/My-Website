@@ -4,20 +4,24 @@
 
 ##issues
 - *OK* parcel bundler resource problem (migrated to WebPack)
-- fs node wont work
+- *OK* fs node wont work
 
 ## todo
 
 - blender
     - draw center of neuron separated from axons
+- gravity on nuclei
+- figure a way to show content on nuclei....
+    
+    
     
 
 - environment:
     - *OK* milky way textures sphere/cube (https://threejs.org/examples/#webgl_shaders_tonemapping)
     
 trajectory:
-    - particles of light traveling between neurons
-    - interactive camera trajectory
+    - *OK*particles of light traveling between neurons
+    - *OK*interactive camera trajectory
 
 - neuron    
     - *OK* glowing neurons (http://kadekeith.me/2017/09/12/three-glow.html)
@@ -28,6 +32,8 @@ trajectory:
 
 - intro (face effects, see neuronet from far..)
     - flower of life
+
+- language support!!
 
 - Menu
     - Trajectory;
